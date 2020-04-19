@@ -25,7 +25,15 @@ module.exports = function(url,callback){
 
   return {
     create:function(newMessage,callback){
-      var message = new Message(newMessage);
+      try {
+        var message = new Message(newMessage);
+      } catch (exception) {
+        return callback('Unable to create message');
+      }
+      if (message.username) 
+        message.username = sanitizeHTML(message.username);
+      if (message.text) 
+        message.text = sanitizeHTML(message.text);
       message.save(callback);
     },
     read:function(id,callback){
