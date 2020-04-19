@@ -1,13 +1,27 @@
 const sanitizeHTML = require('sanitize-html');
+const mongoose = require('mongoose');
 
-module.exports = function(url,callback){
-  const mongoose = require('mongoose');
-  mongoose.connect(url,callback);
+  const messageSchema = new mongoose.Schema(
+    {
+      username:{
+        type:String,
+        required:true
+      },
+      text:{
+        type:String,
+        required:true
+      }
+    },
+    {strict:'throw'}
+  );
 
   const Message = mongoose.model(
     'messages',
-    {username:String,text:String}
+    messageSchema
   );
+
+module.exports = function(url,callback){
+  mongoose.connect(url,callback);
 
   return {
     create:function(newMessage,callback){
@@ -18,16 +32,18 @@ module.exports = function(url,callback){
       Message.findById(id,callback);
     },
     readUsername:function(username,callback){
-      callback();
+      if(typeof username !== 'string')
+        return callback('unable to parse username');
+      Message.find({username:username},callback);
     },
     readAll:function(callback){
-      callback();
+      Message.find(callback);
     },
     update:function(id,updatedMessage,callback){
-      callback();
+      Message.findByIdAndUpdate(id,updatedMessage,callback);
     },
     delete:function(id,callback){
-      callback();
+      Message.findByIdAndDelete(id,callback);
     },
     deleteAll:function(callback){
       Message.remove({},callback);
